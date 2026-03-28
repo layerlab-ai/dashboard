@@ -399,6 +399,13 @@
       </svg>
       클라이언트 CRM
     </button>
+    <button class="nav-item" onclick="goto('litracker')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M2 12 L2 6 L6 6 L6 12"/><path d="M7 12 L7 4 L11 4 L11 12"/><path d="M12 12 L12 8 L16 8 L16 12" style="display:none"/><rect x="1" y="12" width="14" height="1.5" rx="0.5"/>
+        <circle cx="12" cy="4" r="2"/><line x1="11" y1="7" x2="15" y2="3"/>
+      </svg>
+      LinkedIn 트래커
+    </button>
 
     <div style="flex:1"></div>
     <div style="padding: 0 20px;">
@@ -590,6 +597,140 @@
           </tbody>
         </table>
       </div>
+    </div>
+
+    <!-- LinkedIn 트래커 -->
+    <div class="page" id="page-litracker">
+      <div class="page-title">LinkedIn 액션 트래커</div>
+      <div class="page-sub">댓글 → 연결 → DM 순으로. 이름을 먼저 각인시키는 게 먼저예요.</div>
+
+      <!-- 주간 목표 현황 -->
+      <div class="grid3" style="margin-bottom:16px;">
+        <div class="stat-card">
+          <div class="stat-label">댓글 (주간 목표 15)</div>
+          <div class="stat-value" id="li-comment-count">0</div>
+          <div class="progress-bar" style="height:3px;background:var(--border-md);border-radius:2px;margin-top:8px;overflow:hidden;">
+            <div id="li-comment-bar" style="height:100%;background:var(--blue);border-radius:2px;width:0%;transition:width .3s;"></div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">연결 요청 (주간 목표 10)</div>
+          <div class="stat-value" id="li-connect-count">0</div>
+          <div class="progress-bar" style="height:3px;background:var(--border-md);border-radius:2px;margin-top:8px;overflow:hidden;">
+            <div id="li-connect-bar" style="height:100%;background:var(--green);border-radius:2px;width:0%;transition:width .3s;"></div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">DM (주간 목표 3)</div>
+          <div class="stat-value" id="li-dm-count">0</div>
+          <div class="progress-bar" style="height:3px;background:var(--border-md);border-radius:2px;margin-top:8px;overflow:hidden;">
+            <div id="li-dm-bar" style="height:100%;background:var(--amber);border-radius:2px;width:0%;transition:width .3s;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid2">
+
+        <!-- 좌: 액션 기록 입력 -->
+        <div class="card">
+          <div class="card-title">액션 기록</div>
+
+          <label>액션 유형</label>
+          <select id="li-action-type">
+            <option value="comment">💬 댓글</option>
+            <option value="connect">🤝 연결 요청</option>
+            <option value="dm">✉️ DM 발송</option>
+            <option value="follow">👤 팔로우</option>
+          </select>
+
+          <label>상대방 이름 / 계정</label>
+          <input type="text" id="li-target" placeholder="예: John Park / @johnpark_founder">
+
+          <label>포스트 주제 or 맥락</label>
+          <input type="text" id="li-context" placeholder="예: UX에 대한 고민 포스트, 스타트업 출시 공지...">
+
+          <label>내 댓글 or DM 내용 (선택)</label>
+          <textarea id="li-content" rows="3" placeholder="어떤 내용을 남겼는지 간단히 메모"></textarea>
+
+          <label>반응</label>
+          <select id="li-response">
+            <option value="none">반응 없음</option>
+            <option value="like">좋아요 받음</option>
+            <option value="reply">댓글/답장 받음</option>
+            <option value="connect_accepted">연결 수락됨</option>
+            <option value="dm_replied">DM 답장 받음</option>
+            <option value="call">미팅/콜로 이어짐</option>
+          </select>
+
+          <div style="margin-top:14px;display:flex;gap:8px;">
+            <button class="btn btn-primary" onclick="addLiAction()">기록 추가</button>
+            <button class="btn btn-outline btn-sm" onclick="resetLiWeek()">주간 리셋</button>
+          </div>
+
+          <!-- 댓글 공식 참고 -->
+          <div class="divider"></div>
+          <div class="card-title">댓글 공식 참고</div>
+          <div style="display:flex;flex-direction:column;gap:6px;" id="comment-formulas">
+            <div class="action-btn" onclick="copyFormula(0)" style="cursor:pointer;">
+              <div style="font-size:11px;color:var(--text3);margin-bottom:3px;">경험 공유 (효과 ↑)</div>
+              <div style="font-size:12px;color:var(--text2);">Worked on a similar problem at [클라이언트] — [상황 한 줄]. Turned out [인사이트]. [해결책 한 줄].</div>
+            </div>
+            <div class="action-btn" onclick="copyFormula(1)" style="cursor:pointer;">
+              <div style="font-size:11px;color:var(--text3);margin-bottom:3px;">구체적 관찰 추가</div>
+              <div style="font-size:12px;color:var(--text2);">The gap I keep running into: [AI/트렌드] nails [장점], misses [한계]. [판단 필요한 상황] still needs a human.</div>
+            </div>
+            <div class="action-btn" onclick="copyFormula(2)" style="cursor:pointer;">
+              <div style="font-size:11px;color:var(--text3);margin-bottom:3px;">질문으로 대화 열기</div>
+              <div style="font-size:12px;color:var(--text2);">Congrats on [상황]. Curious — did you [선택지 A], or [선택지 B]?</div>
+            </div>
+            <div class="action-btn" onclick="copyFormula(3)" style="cursor:pointer;">
+              <div style="font-size:11px;color:var(--text3);margin-bottom:3px;">DM 템플릿 (반응 후)</div>
+              <div style="font-size:12px;color:var(--text2);">Hi [Name], saw your post about [내용] — [포인트 하나] resonated. I design [서비스] for early-stage startups. If you ever need [결과], happy to chat.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 우: 기록 목록 -->
+        <div class="card" style="padding:0;overflow:hidden;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;">
+            <div class="card-title" style="margin:0;">이번 주 기록</div>
+            <div style="display:flex;gap:6px;">
+              <button class="btn btn-outline btn-sm" onclick="filterLi('all')" id="li-filter-all" style="border-color:var(--blue);color:var(--blue-text);">전체</button>
+              <button class="btn btn-outline btn-sm" onclick="filterLi('comment')" id="li-filter-comment">댓글</button>
+              <button class="btn btn-outline btn-sm" onclick="filterLi('dm')" id="li-filter-dm">DM</button>
+            </div>
+          </div>
+          <div id="li-action-list" style="max-height:520px;overflow-y:auto;">
+            <div style="text-align:center;padding:32px;font-size:13px;color:var(--text3);">
+              아직 기록이 없어요.<br>첫 액션을 기록해보세요.
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 타깃 키워드 참고 -->
+      <div class="card" style="margin-top:14px;">
+        <div class="card-title">검색 키워드 참고</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+          <span style="font-size:11px;font-weight:500;color:var(--text2);">클라이언트 찾기 (Posts 탭)</span>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          ${['\"pitch deck\" founder','\"we\'re building\" startup','\"just launched\" product','\"rebranding\" startup','\"raised\" seed startup','\"design feedback\" anyone'].map(k =>
+            `<span style="font-size:11px;padding:4px 10px;border-radius:8px;background:var(--surface2);border:0.5px solid var(--border-md);color:var(--text2);cursor:pointer;" onclick="navigator.clipboard.writeText('${k}')">${k}</span>`
+          ).join('')}
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 6px;">
+          <span style="font-size:11px;font-weight:500;color:var(--text2);">팔로우할 계정 찾기 (People 탭)</span>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          ${['founder Seoul startup','co-founder SaaS','building in public','startup CEO Korea','early stage founder'].map(k =>
+            `<span style="font-size:11px;padding:4px 10px;border-radius:8px;background:var(--surface2);border:0.5px solid var(--border-md);color:var(--text2);cursor:pointer;" onclick="navigator.clipboard.writeText('${k}')">${k}</span>`
+          ).join('')}
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:8px;">키워드 클릭하면 클립보드에 복사돼요</div>
+      </div>
+
     </div>
 
   </main>
@@ -1151,9 +1292,174 @@ function copyOutput(id) {
   });
 }
 
+// ─── LINKEDIN TRACKER ────────────────────────────────
+const LI_GOALS = { comment: 15, connect: 10, dm: 3, follow: 0 };
+const LI_FORMULAS = [
+  'Worked on a similar problem at [클라이언트] — [상황 한 줄]. Turned out [인사이트]. [해결책 한 줄].',
+  'The gap I keep running into: [AI/트렌드] nails [장점], misses [한계]. [판단 필요한 상황] still needs a human.',
+  'Congrats on [상황]. Curious — did you [선택지 A], or [선택지 B]?',
+  'Hi [Name], saw your post about [내용] — [포인트 하나] resonated. I design [서비스] for early-stage startups. If you ever need [결과], happy to chat.'
+];
+
+let liFilter = 'all';
+
+function loadLiActions() {
+  return JSON.parse(localStorage.getItem('li_actions') || '[]');
+}
+function saveLiActions(actions) {
+  localStorage.setItem('li_actions', JSON.stringify(actions));
+}
+
+function addLiAction() {
+  const type = document.getElementById('li-action-type').value;
+  const target = document.getElementById('li-target').value.trim();
+  if (!target) { alert('상대방 이름을 입력해주세요'); return; }
+
+  const actions = loadLiActions();
+  actions.unshift({
+    id: Date.now(),
+    type,
+    target,
+    context: document.getElementById('li-context').value.trim(),
+    content: document.getElementById('li-content').value.trim(),
+    response: document.getElementById('li-response').value,
+    date: new Date().toLocaleDateString('ko-KR'),
+    week: getWeekKey()
+  });
+  saveLiActions(actions);
+  renderLiTracker();
+
+  // 입력 초기화
+  ['li-target','li-context','li-content'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('li-response').value = 'none';
+}
+
+function getWeekKey() {
+  const now = new Date();
+  const jan1 = new Date(now.getFullYear(), 0, 1);
+  const week = Math.ceil(((now - jan1) / 86400000 + jan1.getDay() + 1) / 7);
+  return `${now.getFullYear()}-W${week}`;
+}
+
+function renderLiTracker() {
+  const actions = loadLiActions();
+  const thisWeek = getWeekKey();
+  const weekActions = actions.filter(a => a.week === thisWeek);
+
+  // 주간 카운트
+  const counts = { comment: 0, connect: 0, dm: 0, follow: 0 };
+  weekActions.forEach(a => { if (counts[a.type] !== undefined) counts[a.type]++; });
+
+  // 통계 업데이트
+  ['comment','connect','dm'].forEach(type => {
+    const el = document.getElementById(`li-${type}-count`);
+    const bar = document.getElementById(`li-${type}-bar`);
+    if (el) el.textContent = counts[type];
+    if (bar) bar.style.width = Math.min(100, Math.round(counts[type] / LI_GOALS[type] * 100)) + '%';
+  });
+
+  // 목록 렌더
+  const list = document.getElementById('li-action-list');
+  const filtered = actions.filter(a => liFilter === 'all' || a.type === liFilter);
+
+  if (!filtered.length) {
+    list.innerHTML = '<div style="text-align:center;padding:32px;font-size:13px;color:var(--text3);">아직 기록이 없어요.<br>첫 액션을 기록해보세요.</div>';
+    return;
+  }
+
+  const typeLabel = { comment:'💬 댓글', connect:'🤝 연결', dm:'✉️ DM', follow:'👤 팔로우' };
+  const responseLabel = {
+    none: '', like:'👍 좋아요 받음', reply:'💬 답글 받음',
+    connect_accepted:'✅ 연결 수락', dm_replied:'📩 DM 답장', call:'🎯 미팅으로'
+  };
+  const responseBadgeColor = {
+    none:'', like:'var(--amber-bg)', reply:'var(--blue-bg)',
+    connect_accepted:'var(--green-bg)', dm_replied:'var(--green-bg)', call:'var(--green-bg)'
+  };
+  const responseTextColor = {
+    none:'', like:'var(--amber-text)', reply:'var(--blue-text)',
+    connect_accepted:'var(--green-text)', dm_replied:'var(--green-text)', call:'var(--green-text)'
+  };
+
+  list.innerHTML = filtered.map((a, i) => `
+    <div style="padding:14px 20px;border-bottom:0.5px solid var(--border);display:flex;flex-direction:column;gap:5px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:12px;font-weight:500;color:var(--text);">${a.target}</span>
+          <span style="font-size:11px;padding:2px 7px;border-radius:6px;background:var(--surface2);color:var(--text2);">${typeLabel[a.type]}</span>
+          ${a.response !== 'none' ? `<span style="font-size:11px;padding:2px 7px;border-radius:6px;background:${responseBadgeColor[a.response]};color:${responseTextColor[a.response]};">${responseLabel[a.response]}</span>` : ''}
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:11px;color:var(--text3);">${a.date}</span>
+          <button onclick="updateLiResponse(${i})" style="font-size:11px;padding:3px 8px;border-radius:6px;border:0.5px solid var(--border-md);background:transparent;color:var(--text2);cursor:pointer;">반응 업데이트</button>
+          <button onclick="deleteLiAction(${i})" style="font-size:11px;padding:3px 8px;border-radius:6px;border:0.5px solid var(--border-md);background:transparent;color:var(--text3);cursor:pointer;">삭제</button>
+        </div>
+      </div>
+      ${a.context ? `<div style="font-size:12px;color:var(--text2);">📌 ${a.context}</div>` : ''}
+      ${a.content ? `<div style="font-size:12px;color:var(--text3);font-style:italic;">"${a.content}"</div>` : ''}
+    </div>
+  `).join('');
+}
+
+function updateLiResponse(idx) {
+  const actions = loadLiActions();
+  const filtered = actions.filter(a => liFilter === 'all' || a.type === liFilter);
+  const target = filtered[idx];
+  const realIdx = actions.findIndex(a => a.id === target.id);
+
+  const options = ['none','like','reply','connect_accepted','dm_replied','call'];
+  const labels = ['반응 없음','좋아요 받음','답글 받음','연결 수락됨','DM 답장 받음','미팅/콜로 이어짐'];
+  const current = options.indexOf(actions[realIdx].response);
+  const next = (current + 1) % options.length;
+  actions[realIdx].response = options[next];
+  saveLiActions(actions);
+  renderLiTracker();
+}
+
+function deleteLiAction(idx) {
+  const actions = loadLiActions();
+  const filtered = actions.filter(a => liFilter === 'all' || a.type === liFilter);
+  const target = filtered[idx];
+  const realIdx = actions.findIndex(a => a.id === target.id);
+  if (!confirm('삭제할까요?')) return;
+  actions.splice(realIdx, 1);
+  saveLiActions(actions);
+  renderLiTracker();
+}
+
+function filterLi(type) {
+  liFilter = type;
+  ['all','comment','dm'].forEach(t => {
+    const btn = document.getElementById(`li-filter-${t}`);
+    if (btn) {
+      btn.style.borderColor = t === type ? 'var(--blue)' : '';
+      btn.style.color = t === type ? 'var(--blue-text)' : '';
+    }
+  });
+  renderLiTracker();
+}
+
+function resetLiWeek() {
+  if (!confirm('이번 주 기록을 모두 삭제할까요?')) return;
+  const actions = loadLiActions();
+  const thisWeek = getWeekKey();
+  saveLiActions(actions.filter(a => a.week !== thisWeek));
+  renderLiTracker();
+}
+
+function copyFormula(i) {
+  navigator.clipboard.writeText(LI_FORMULAS[i]).then(() => {
+    const btns = document.querySelectorAll('#comment-formulas .action-btn');
+    const orig = btns[i].style.borderColor;
+    btns[i].style.borderColor = 'var(--blue)';
+    setTimeout(() => btns[i].style.borderColor = orig, 1000);
+  });
+}
+
 // ─── INIT ────────────────────────────────────────────
 renderRoutine();
 renderClients();
+renderLiTracker();
 
 const savedKey = localStorage.getItem('claude_api_key');
 if (savedKey) document.getElementById('apiKeyInput').value = savedKey;
