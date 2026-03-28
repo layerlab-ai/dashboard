@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Freelance OS — Min Seongil</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f8f7f4;
+    --surface: #ffffff;
+    --surface2: #f1efe8;
+    --border: rgba(0,0,0,0.08);
+    --border-md: rgba(0,0,0,0.14);
+    --text: #1a1a18;
+    --text2: #6b6960;
+    --text3: #9c9a92;
+    --blue: #185fa5;
+    --blue-bg: #e6f1fb;
+    --blue-text: #0c447c;
+    --green: #3b6d11;
+    --green-bg: #eaf3de;
+    --green-text: #27500a;
+    --amber: #854f0b;
+    --amber-bg: #faeeda;
+    --amber-text: #633806;
+    --red-bg: #fcebeb;
+    --red-text: #a32d2d;
+    --radius: 10px;
+    --radius-lg: 14px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a18;
+      --surface: #242422;
+      --surface2: #2c2c2a;
+      --border: rgba(255,255,255,0.08);
+      --border-md: rgba(255,255,255,0.14);
+      --text: #e8e6de;
+      --text2: #9c9a92;
+      --text3: #6b6960;
+      --blue: #85b7eb;
+      --blue-bg: #0c447c;
+      --blue-text: #b5d4f4;
+      --green: #97c459;
+      --green-bg: #27500a;
+      --green-text: #c0dd97;
+      --amber: #ef9f27;
+      --amber-bg: #633806;
+      --amber-text: #fac775;
+      --red-bg: #501313;
+      --red-text: #f7c1c1;
+    }
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* Layout */
+  .app { display: flex; height: 100vh; overflow: hidden; }
+
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-right: 0.5px solid var(--border-md);
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+  }
+
+  .logo {
+    padding: 0 20px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    border-bottom: 0.5px solid var(--border);
+    margin-bottom: 12px;
+  }
+  .logo span { color: var(--text3); font-weight: 400; }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 20px;
+    font-size: 13px;
+    color: var(--text2);
+    cursor: pointer;
+    border-radius: 0;
+    transition: all .15s;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--blue-bg); color: var(--blue-text); font-weight: 500; }
+  .nav-icon { width: 16px; height: 16px; opacity: .7; flex-shrink: 0; }
+
+  .main { flex: 1; overflow-y: auto; padding: 28px 32px; }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* Typography */
+  .page-title { font-size: 20px; font-weight: 600; margin-bottom: 4px; letter-spacing: -0.02em; }
+  .page-sub { font-size: 13px; color: var(--text2); margin-bottom: 24px; }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 0.5px solid var(--border-md);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    margin-bottom: 14px;
+  }
+  .card-title { font-size: 13px; font-weight: 600; margin-bottom: 12px; color: var(--text); }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+  /* Badge */
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+  }
+  .badge-blue { background: var(--blue-bg); color: var(--blue-text); }
+  .badge-green { background: var(--green-bg); color: var(--green-text); }
+  .badge-amber { background: var(--amber-bg); color: var(--amber-text); }
+  .badge-red { background: var(--red-bg); color: var(--red-text); }
+
+  /* Form elements */
+  textarea, input[type=text], select {
+    width: 100%;
+    background: var(--surface2);
+    border: 0.5px solid var(--border-md);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--text);
+    font-family: inherit;
+    resize: none;
+    outline: none;
+    transition: border-color .15s;
+    line-height: 1.6;
+  }
+  textarea:focus, input[type=text]:focus, select:focus {
+    border-color: var(--blue);
+  }
+  select { appearance: none; cursor: pointer; }
+
+  label { font-size: 12px; color: var(--text2); display: block; margin-bottom: 5px; margin-top: 12px; }
+  label:first-child { margin-top: 0; }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 16px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all .15s;
+    font-family: inherit;
+  }
+  .btn-primary { background: var(--text); color: var(--bg); }
+  .btn-primary:hover { opacity: .85; }
+  .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-outline {
+    background: transparent;
+    border: 0.5px solid var(--border-md);
+    color: var(--text2);
+  }
+  .btn-outline:hover { background: var(--surface2); color: var(--text); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+  /* AI Output */
+  .ai-output {
+    background: var(--surface2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    font-size: 13px;
+    line-height: 1.75;
+    color: var(--text);
+    min-height: 80px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .ai-output.empty { color: var(--text3); font-style: italic; }
+  .ai-output.loading { color: var(--text3); }
+
+  /* Loader */
+  .loader {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--border-md);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Checklist */
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 0.5px solid var(--border);
+    cursor: pointer;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-box {
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid var(--border-md);
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .15s;
+  }
+  .check-item.done .check-box {
+    background: var(--green);
+    border-color: var(--green);
+  }
+  .check-item.done .check-box::after {
+    content: '';
+    width: 8px;
+    height: 5px;
+    border-left: 1.5px solid white;
+    border-bottom: 1.5px solid white;
+    transform: rotate(-45deg) translateY(-1px);
+    display: block;
+  }
+  .check-item.done .check-label { text-decoration: line-through; color: var(--text3); }
+  .check-label { font-size: 13px; color: var(--text); flex: 1; }
+  .check-meta { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+  /* Client table */
+  .client-table { width: 100%; border-collapse: collapse; }
+  .client-table th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text3);
+    padding: 0 12px 10px;
+    border-bottom: 0.5px solid var(--border-md);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+  .client-table td {
+    padding: 12px;
+    font-size: 13px;
+    border-bottom: 0.5px solid var(--border);
+    vertical-align: top;
+  }
+  .client-table tr:last-child td { border-bottom: none; }
+
+  .status-pill {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 10px;
+    white-space: nowrap;
+  }
+  .status-lead { background: var(--amber-bg); color: var(--amber-text); }
+  .status-active { background: var(--green-bg); color: var(--green-text); }
+  .status-done { background: var(--surface2); color: var(--text3); }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.3);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+    opacity: 0; pointer-events: none; transition: opacity .2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--surface);
+    border: 0.5px solid var(--border-md);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    width: min(480px, 90vw);
+    max-height: 85vh;
+    overflow-y: auto;
+    transform: translateY(8px); transition: transform .2s;
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .modal-title { font-size: 15px; font-weight: 600; }
+  .close-btn { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 18px; line-height: 1; padding: 2px 6px; border-radius: 6px; }
+  .close-btn:hover { background: var(--surface2); color: var(--text); }
+
+  /* Tip box */
+  .tip {
+    background: var(--blue-bg);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--blue-text);
+    margin-bottom: 14px;
+    line-height: 1.6;
+  }
+
+  /* API key section */
+  .api-section {
+    background: var(--surface2);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    font-size: 12px;
+    color: var(--text2);
+  }
+  .api-row { display: flex; gap: 8px; align-items: center; }
+  .api-row input { flex: 1; margin: 0; }
+
+  /* copy btn */
+  .copy-btn {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 0.5px solid var(--border-md);
+    background: var(--surface);
+    color: var(--text2);
+    cursor: pointer;
+    margin-top: 8px;
+  }
+  .copy-btn:hover { background: var(--surface2); }
+
+  /* divider */
+  .divider { height: 0.5px; background: var(--border); margin: 16px 0; }
+
+  /* stat cards */
+  .stat-card {
+    background: var(--surface2);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+  }
+  .stat-label { font-size: 11px; color: var(--text3); margin-bottom: 4px; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; }
+  .stat-value { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="logo">Freelance OS <span>/ MSI</span></div>
+
+    <button class="nav-item active" onclick="goto('proposal')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="2" y="2" width="12" height="12" rx="2"/><line x1="5" y1="6" x2="11" y2="6"/><line x1="5" y1="9" x2="9" y2="9"/>
+      </svg>
+      제안서 생성기
+    </button>
+    <button class="nav-item" onclick="goto('linkedin')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/>
+      </svg>
+      LinkedIn 포스트
+    </button>
+    <button class="nav-item" onclick="goto('routine')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="8" cy="8" r="6"/><polyline points="8,5 8,8 10,10"/>
+      </svg>
+      주간 루틴
+    </button>
+    <button class="nav-item" onclick="goto('clients')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="6" cy="5" r="2.5"/><path d="M1 13c0-3 2-4.5 5-4.5s5 1.5 5 4.5"/><circle cx="12" cy="6" r="2"/><path d="M14 13c0-2-1-3-2-3.5"/>
+      </svg>
+      클라이언트 CRM
+    </button>
+
+    <div style="flex:1"></div>
+    <div style="padding: 0 20px;">
+      <div class="api-section">
+        <div style="margin-bottom:6px;font-weight:500;color:var(--text)">Claude API Key</div>
+        <div class="api-row">
+          <input type="password" id="apiKeyInput" placeholder="sk-ant-..." style="font-size:12px;padding:6px 10px;height:auto" />
+        </div>
+        <div style="margin-top:6px;color:var(--text3);font-size:11px;">브라우저에만 저장됨 (서버 전송 없음)</div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- 제안서 생성기 -->
+    <div class="page active" id="page-proposal">
+      <div class="page-title">제안서 / DM 생성기</div>
+      <div class="page-sub">클라이언트 공고를 붙여넣으면 맞춤 제안서를 생성해줘요</div>
+
+      <div class="tip">삼성·CJ·넥슨 레퍼런스 + AI 자동화 강점이 자동으로 반영됩니다</div>
+
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title">입력</div>
+
+          <label>작업 유형</label>
+          <select id="proposalType">
+            <option value="upwork">Upwork 제안서</option>
+            <option value="linkedin_dm">LinkedIn DM</option>
+            <option value="email">이메일 제안</option>
+          </select>
+
+          <label>클라이언트 공고 / 배경</label>
+          <textarea id="proposalInput" rows="7" placeholder="Upwork 공고 내용, 또는 클라이언트 회사 정보, 필요한 작업 등을 붙여넣어 주세요.
+
+예: 'Looking for a designer to create a pitch deck for our Series A raise. We're a B2B SaaS startup in the HR space. Budget: $500-800. Need within 1 week.'"></textarea>
+
+          <label>강조할 포인트 (선택)</label>
+          <input type="text" id="proposalEmphasis" placeholder="예: 빠른 납기, 삼성 레퍼런스, AI 활용...">
+
+          <div style="margin-top:14px;display:flex;gap:8px;">
+            <button class="btn btn-primary" onclick="generateProposal()" id="proposalBtn">
+              <span id="proposalBtnText">생성하기</span>
+            </button>
+            <button class="btn btn-outline" onclick="clearProposal()">초기화</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div class="card-title" style="margin:0">생성 결과</div>
+            <button class="copy-btn" onclick="copyOutput('proposalOutput')">복사</button>
+          </div>
+          <div class="ai-output empty" id="proposalOutput">생성 버튼을 누르면 여기에 결과가 표시됩니다</div>
+
+          <div class="divider"></div>
+          <div class="card-title">버전 변형</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-outline btn-sm" onclick="variantProposal('shorter')">더 짧게</button>
+            <button class="btn btn-outline btn-sm" onclick="variantProposal('formal')">더 격식체</button>
+            <button class="btn btn-outline btn-sm" onclick="variantProposal('aggressive')">더 직접적으로</button>
+            <button class="btn btn-outline btn-sm" onclick="variantProposal('korean')">한국어로</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LinkedIn 포스트 -->
+    <div class="page" id="page-linkedin">
+      <div class="page-title">LinkedIn 포스트 생성기</div>
+      <div class="page-sub">스타트업 창업자가 저장하는 콘텐츠를 자동 생성해요</div>
+
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title">포스트 설정</div>
+
+          <label>콘텐츠 유형</label>
+          <select id="linkedinType">
+            <option value="before_after">Before/After — 작업 전후 공개</option>
+            <option value="mistake">실수 폭로 — 흔한 실수 3가지</option>
+            <option value="process">프로세스 공개 — 작업 순서</option>
+            <option value="tool">도구/방법 공유 — AI 활용법</option>
+            <option value="case_study">미니 케이스 스터디</option>
+            <option value="insight">업계 인사이트/관찰</option>
+          </select>
+
+          <label>소재 / 최근 작업 내용</label>
+          <textarea id="linkedinInput" rows="5" placeholder="예: 이번 주 스타트업 피치덱을 리뷰했는데 대부분 3번째 슬라이드에서 스토리가 끊기는 문제가 있었다.
+
+또는: AI로 무드보드를 10분 안에 만드는 방법을 클라이언트에게 보여줬다."></textarea>
+
+          <label>톤</label>
+          <select id="linkedinTone">
+            <option value="professional">전문적 + 인사이트</option>
+            <option value="casual">캐주얼 + 공감</option>
+            <option value="bold">대담 + 직설</option>
+          </select>
+
+          <div style="margin-top:14px;display:flex;gap:8px;">
+            <button class="btn btn-primary" onclick="generateLinkedin()" id="linkedinBtn">생성하기</button>
+            <button class="btn btn-outline" onclick="clearLinkedin()">초기화</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div class="card-title" style="margin:0">생성 결과</div>
+            <button class="copy-btn" onclick="copyOutput('linkedinOutput')">복사</button>
+          </div>
+          <div class="ai-output empty" id="linkedinOutput">생성 버튼을 누르면 여기에 결과가 표시됩니다</div>
+
+          <div class="divider"></div>
+          <div class="card-title">댓글용 짧은 버전</div>
+          <button class="btn btn-outline btn-sm" onclick="generateComment()">댓글용 3줄 요약 생성</button>
+          <div class="ai-output empty" id="commentOutput" style="margin-top:10px;min-height:50px;">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 주간 루틴 -->
+    <div class="page" id="page-routine">
+      <div class="page-title">주간 루틴 체크리스트</div>
+      <div class="page-sub">클릭해서 완료 처리 — 매주 월요일 자동 리셋 (localStorage 저장)</div>
+
+      <div class="grid3">
+        <div class="stat-card">
+          <div class="stat-label">완료율</div>
+          <div class="stat-value" id="routineProgress">0%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">완료 항목</div>
+          <div class="stat-value" id="routineDone">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">남은 항목</div>
+          <div class="stat-value" id="routineLeft">0</div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;display:flex;gap:8px;margin-bottom:14px;">
+        <button class="btn btn-outline btn-sm" onclick="resetRoutine()">이번 주 리셋</button>
+      </div>
+
+      <div class="grid2" id="routineGrid"></div>
+    </div>
+
+    <!-- 클라이언트 CRM -->
+    <div class="page" id="page-clients">
+      <div class="page-title">클라이언트 트래커</div>
+      <div class="page-sub">리드부터 완료까지 — 로컬에 자동 저장됩니다</div>
+
+      <div style="display:flex;gap:8px;margin-bottom:16px;">
+        <button class="btn btn-primary" onclick="openModal()">+ 클라이언트 추가</button>
+      </div>
+
+      <div class="grid3" style="margin-bottom:16px;">
+        <div class="stat-card">
+          <div class="stat-label">진행 중</div>
+          <div class="stat-value" id="statActive">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">리드</div>
+          <div class="stat-value" id="statLead">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">완료</div>
+          <div class="stat-value" id="statDone">0</div>
+        </div>
+      </div>
+
+      <div class="card" style="padding:0;overflow:hidden">
+        <table class="client-table">
+          <thead>
+            <tr>
+              <th>클라이언트</th>
+              <th>프로젝트</th>
+              <th>플랫폼</th>
+              <th>예산</th>
+              <th>상태</th>
+              <th>메모</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="clientTableBody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Add Client Modal -->
+<div class="modal-overlay" id="clientModal" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">클라이언트 추가</div>
+      <button class="close-btn" onclick="closeModal()">×</button>
+    </div>
+
+    <label>이름 / 회사명</label>
+    <input type="text" id="cName" placeholder="예: John / Acme Corp">
+
+    <label>프로젝트 유형</label>
+    <input type="text" id="cProject" placeholder="예: Pitch Deck, Branding, Landing Page">
+
+    <label>플랫폼</label>
+    <select id="cPlatform">
+      <option value="Upwork">Upwork</option>
+      <option value="LinkedIn">LinkedIn</option>
+      <option value="위시켓">위시켓</option>
+      <option value="직접 문의">직접 문의</option>
+      <option value="레퍼럴">레퍼럴</option>
+    </select>
+
+    <label>예산</label>
+    <input type="text" id="cBudget" placeholder="예: $800 / ₩200만">
+
+    <label>상태</label>
+    <select id="cStatus">
+      <option value="lead">리드</option>
+      <option value="active">진행 중</option>
+      <option value="done">완료</option>
+    </select>
+
+    <label>메모</label>
+    <textarea id="cNote" rows="3" placeholder="마감일, 특이사항, 다음 액션 등"></textarea>
+
+    <div style="margin-top:16px;display:flex;gap:8px;">
+      <button class="btn btn-primary" onclick="addClient()">저장</button>
+      <button class="btn btn-outline" onclick="closeModal()">취소</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────
+const PROFILE = `
+당신은 민성일(Min Seongil)의 프리랜서 디자인 비즈니스 어시스턴트입니다.
+
+[민성일 프로필]
+- 삼성(Samsung Health 앱 차트 디자인, Samsung Annual Project 콘텐츠 디자인, 반도체 그래픽·모션), CJ그룹 웹사이트 리뉴얼, 넥슨 입찰 서비스 UX, 콜마글로벌 웹사이트 작업 경험
+- LayerLab: AI 기반 자동화 웹사이트 생성 프로덕트 설계 (기획-디자인-개발 통합 실행 구조)
+- 전문 분야: UI/UX, 브랜드 아이덴티티, 피치덱, 웹사이트, AI 제품 설계
+- 강점: 대기업 수준의 디자인 + AI 도구 활용으로 에이전시 속도의 3분의 1 납기
+
+[서비스 방향]
+- 타깃: 스타트업 창업자, Series A 이전 초기 스타트업
+- 핵심 제공 가치: 피치덱, 브랜딩, 웹사이트를 AI 보조 + 전문가 퀄리티로 빠르게 납품
+- 추후 목표: 디자인 구독 서비스 (인하우스 디자이너 효과)
+`.trim();
+
+let lastProposalInput = '';
+let lastLinkedinOutput = '';
+
+// ─── NAVIGATION ──────────────────────────────────────
+function goto(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ─── API CALL ────────────────────────────────────────
+async function callClaude(prompt, outputEl) {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key) {
+    outputEl.textContent = '⚠ API Key를 왼쪽 하단에 입력해주세요 (sk-ant-로 시작)';
+    outputEl.classList.remove('empty', 'loading');
+    return null;
+  }
+
+  outputEl.innerHTML = '<span class="loader"></span>  생성 중...';
+  outputEl.classList.add('loading');
+  outputEl.classList.remove('empty');
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: PROFILE,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    const text = data.content?.[0]?.text || '';
+    outputEl.textContent = text;
+    outputEl.classList.remove('loading', 'empty');
+    return text;
+  } catch (e) {
+    outputEl.textContent = '오류: ' + e.message;
+    outputEl.classList.remove('loading', 'empty');
+    return null;
+  }
+}
+
+// ─── PROPOSAL ────────────────────────────────────────
+async function generateProposal() {
+  const type = document.getElementById('proposalType').value;
+  const input = document.getElementById('proposalInput').value.trim();
+  const emphasis = document.getElementById('proposalEmphasis').value.trim();
+  const outputEl = document.getElementById('proposalOutput');
+
+  if (!input) { outputEl.textContent = '클라이언트 공고나 배경 정보를 입력해주세요'; outputEl.classList.remove('empty'); return; }
+
+  lastProposalInput = input;
+
+  const typeMap = {
+    upwork: 'Upwork 제안서 (영문, 5~8문장, 클라이언트 JD 내용을 언급하고 시작)',
+    linkedin_dm: 'LinkedIn DM (영문, 3문장 이하, 가치 제안 중심)',
+    email: '이메일 제안 (영문, 제목 포함, 7~10문장)'
+  };
+
+  const prompt = `다음 클라이언트 공고/배경을 분석하고 ${typeMap[type]}를 작성해주세요.
+
+[클라이언트 정보]
+${input}
+
+[강조 요청]
+${emphasis || '없음'}
+
+[작성 규칙]
+- 첫 문장에서 클라이언트 포스팅 내용을 구체적으로 언급 (내가 읽었다는 걸 증명)
+- 자기소개 나열 금지. 결과와 가치 제안으로 시작
+- 삼성/CJ/넥슨 경험을 자연스럽게 1회 언급
+- AI 도구 활용으로 빠른 납기가 가능함을 언급
+- 마지막은 call-to-action (콜 제안 or 케이스 스터디 공유 제안)
+- 자연스러운 영어로 작성`;
+
+  const btn = document.getElementById('proposalBtn');
+  btn.disabled = true;
+  document.getElementById('proposalBtnText').textContent = '생성 중...';
+  await callClaude(prompt, outputEl);
+  btn.disabled = false;
+  document.getElementById('proposalBtnText').textContent = '생성하기';
+}
+
+async function variantProposal(variant) {
+  const current = document.getElementById('proposalOutput').textContent;
+  const outputEl = document.getElementById('proposalOutput');
+  if (!current || current.includes('생성 버튼') || current.includes('⚠')) return;
+
+  const variantMap = {
+    shorter: '위 제안서를 절반 길이로 핵심만 남겨서 다시 써주세요',
+    formal: '위 제안서를 더 격식 있고 전문적인 톤으로 다시 써주세요',
+    aggressive: '위 제안서를 더 직접적이고 자신감 있는 톤으로 다시 써주세요',
+    korean: '위 제안서를 한국어로 번역/재작성해주세요'
+  };
+
+  const prompt = `${variantMap[variant]}:
+
+---
+${current}
+---`;
+
+  await callClaude(prompt, outputEl);
+}
+
+function clearProposal() {
+  document.getElementById('proposalInput').value = '';
+  document.getElementById('proposalEmphasis').value = '';
+  const o = document.getElementById('proposalOutput');
+  o.textContent = '생성 버튼을 누르면 여기에 결과가 표시됩니다';
+  o.classList.add('empty');
+}
+
+// ─── LINKEDIN ────────────────────────────────────────
+async function generateLinkedin() {
+  const type = document.getElementById('linkedinType').value;
+  const input = document.getElementById('linkedinInput').value.trim();
+  const tone = document.getElementById('linkedinTone').value;
+  const outputEl = document.getElementById('linkedinOutput');
+
+  if (!input) { outputEl.textContent = '소재를 입력해주세요'; outputEl.classList.remove('empty'); return; }
+
+  const typeMap = {
+    before_after: 'Before/After 형식 — 작업 전후를 보여주는 포스트',
+    mistake: '실수 폭로 형식 — "흔한 실수 N가지" 리스트 포스트',
+    process: '프로세스 공개 — 작업 순서와 사고 과정을 보여주는 포스트',
+    tool: 'AI/도구 활용 팁 — 실용적인 방법 공유 포스트',
+    case_study: '미니 케이스 스터디 — 문제→접근→결과 구조',
+    insight: '업계 인사이트 — 관찰과 의견을 담은 사고 리더십 포스트'
+  };
+
+  const toneMap = {
+    professional: '전문적이고 인사이트 있는 톤, 신뢰감 있게',
+    casual: '캐주얼하고 공감 가는 톤, 친근하게',
+    bold: '대담하고 직설적인 톤, 논쟁적 훅으로 시작'
+  };
+
+  const prompt = `다음 소재로 LinkedIn 포스트를 작성해주세요.
+
+[소재]
+${input}
+
+[포스트 유형]
+${typeMap[type]}
+
+[톤]
+${toneMap[tone]}
+
+[작성 규칙]
+- 첫 줄: 스크롤을 멈추게 하는 강렬한 문장 (반직관적 주장, 날카로운 질문, 충격적 사실)
+- 한 문장 한 줄 — 줄바꿈을 적극 활용
+- 스타트업 창업자, 초기 단계 founder들이 공감하고 저장할 만한 내용
+- 마지막 줄: 댓글을 유도하는 질문 or CTA
+- 영어로 작성
+- 해시태그 3~4개 포함`;
+
+  const btn = document.getElementById('linkedinBtn');
+  btn.disabled = true;
+  btn.textContent = '생성 중...';
+  const result = await callClaude(prompt, outputEl);
+  lastLinkedinOutput = result || '';
+  btn.disabled = false;
+  btn.textContent = '생성하기';
+}
+
+async function generateComment() {
+  const output = document.getElementById('linkedinOutput').textContent;
+  const commentEl = document.getElementById('commentOutput');
+
+  if (!output || output.includes('생성 버튼') || output.includes('⚠')) {
+    commentEl.textContent = '먼저 포스트를 생성해주세요';
+    commentEl.classList.remove('empty');
+    return;
+  }
+
+  const prompt = `다음 LinkedIn 포스트 내용을 바탕으로, 다른 사람 게시글에 달 수 있는 가치 있는 댓글을 3줄로 작성해주세요.
+자기 홍보가 아닌, 포스트 주제에 관련된 경험/인사이트를 짧게 추가하는 형식으로:
+
+${output}`;
+
+  await callClaude(prompt, commentEl);
+}
+
+function clearLinkedin() {
+  document.getElementById('linkedinInput').value = '';
+  ['linkedinOutput', 'commentOutput'].forEach(id => {
+    const el = document.getElementById(id);
+    el.textContent = id === 'linkedinOutput' ? '생성 버튼을 누르면 여기에 결과가 표시됩니다' : '—';
+    el.classList.add('empty');
+  });
+}
+
+// ─── ROUTINE ─────────────────────────────────────────
+const ROUTINE_DATA = [
+  {
+    day: '월요일',
+    badge: 'badge-blue',
+    items: [
+      { id: 'mon1', label: 'Upwork 새 공고 확인 (30분)', meta: '키워드: pitch deck, SaaS design, startup branding' },
+      { id: 'mon2', label: '이번 주 LinkedIn 포스트 소재 정하기', meta: '작업 일지, 관찰, 클라이언트 인사이트' },
+      { id: 'mon3', label: '진행 중 클라이언트 상태 업데이트', meta: 'CRM 탭에서 진행 상황 기록' },
+    ]
+  },
+  {
+    day: '화요일',
+    badge: 'badge-green',
+    items: [
+      { id: 'tue1', label: 'Upwork 제안서 2~3개 발송', meta: '이 대시보드 제안서 생성기 활용' },
+      { id: 'tue2', label: 'LinkedIn 포스트 작성 + 예약', meta: '월요일 소재 → Buffer/Later 예약' },
+    ]
+  },
+  {
+    day: '수요일',
+    badge: 'badge-blue',
+    items: [
+      { id: 'wed1', label: 'LinkedIn 댓글 활동 (20분)', meta: '스타트업 창업자, VC 포스트에 인사이트 댓글' },
+      { id: 'wed2', label: 'Upwork 메시지 답변 확인', meta: '24시간 내 응답 유지' },
+    ]
+  },
+  {
+    day: '목요일',
+    badge: 'badge-amber',
+    items: [
+      { id: 'thu1', label: '진행 중 프로젝트 중간 체크인 발송', meta: '"Here\'s where we are" 메시지' },
+      { id: 'thu2', label: 'LinkedIn 포스트 2 작성 (Before/After)', meta: '이미지 포함, 저장율 높은 포스트' },
+    ]
+  },
+  {
+    day: '금요일',
+    badge: 'badge-green',
+    items: [
+      { id: 'fri1', label: '이번 주 수주/문의 집계', meta: 'CRM 탭 업데이트' },
+      { id: 'fri2', label: 'LinkedIn 짧은 팁 포스트', meta: '댓글 유도, 알고리즘 부스팅' },
+      { id: 'fri3', label: '완료 프로젝트 리뷰 요청 발송', meta: 'Upwork 리뷰 + LinkedIn 추천사' },
+    ]
+  },
+  {
+    day: '주말 (선택)',
+    badge: 'badge-amber',
+    items: [
+      { id: 'sat1', label: 'Behance 케이스 스터디 업데이트', meta: '완료 프로젝트 → 케이스 스터디 1건' },
+      { id: 'sat2', label: '다음 주 콘텐츠 배치 작업', meta: '2주치 소재 준비, Buffer 예약' },
+    ]
+  }
+];
+
+function renderRoutine() {
+  const saved = JSON.parse(localStorage.getItem('routine_checks') || '{}');
+  const grid = document.getElementById('routineGrid');
+  grid.innerHTML = '';
+
+  let total = 0, done = 0;
+
+  ROUTINE_DATA.forEach(day => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <span class="badge ${day.badge}" style="margin:0">${day.day}</span>
+    </div>`;
+
+    day.items.forEach(item => {
+      total++;
+      const checked = saved[item.id];
+      if (checked) done++;
+      const div = document.createElement('div');
+      div.className = 'check-item' + (checked ? ' done' : '');
+      div.innerHTML = `<div class="check-box"></div>
+        <div style="flex:1">
+          <div class="check-label">${item.label}</div>
+          <div class="check-meta">${item.meta}</div>
+        </div>`;
+      div.onclick = () => toggleCheck(item.id);
+      card.appendChild(div);
+    });
+
+    grid.appendChild(card);
+  });
+
+  document.getElementById('routineProgress').textContent = total ? Math.round(done/total*100) + '%' : '0%';
+  document.getElementById('routineDone').textContent = done;
+  document.getElementById('routineLeft').textContent = total - done;
+}
+
+function toggleCheck(id) {
+  const saved = JSON.parse(localStorage.getItem('routine_checks') || '{}');
+  saved[id] = !saved[id];
+  localStorage.setItem('routine_checks', JSON.stringify(saved));
+  renderRoutine();
+}
+
+function resetRoutine() {
+  if (confirm('이번 주 체크를 모두 초기화할까요?')) {
+    localStorage.removeItem('routine_checks');
+    renderRoutine();
+  }
+}
+
+// ─── CLIENTS ─────────────────────────────────────────
+function loadClients() {
+  return JSON.parse(localStorage.getItem('clients') || '[]');
+}
+function saveClients(clients) {
+  localStorage.setItem('clients', JSON.stringify(clients));
+}
+
+function renderClients() {
+  const clients = loadClients();
+  const tbody = document.getElementById('clientTableBody');
+
+  let active = 0, lead = 0, doneC = 0;
+  clients.forEach(c => {
+    if (c.status === 'active') active++;
+    else if (c.status === 'lead') lead++;
+    else doneC++;
+  });
+
+  document.getElementById('statActive').textContent = active;
+  document.getElementById('statLead').textContent = lead;
+  document.getElementById('statDone').textContent = doneC;
+
+  if (!clients.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:24px">클라이언트를 추가해주세요</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = clients.map((c, i) => `
+    <tr>
+      <td><strong>${c.name}</strong></td>
+      <td style="color:var(--text2)">${c.project}</td>
+      <td style="color:var(--text3)">${c.platform}</td>
+      <td>${c.budget}</td>
+      <td><span class="status-pill status-${c.status}">${c.status === 'lead' ? '리드' : c.status === 'active' ? '진행 중' : '완료'}</span></td>
+      <td style="color:var(--text2);font-size:12px;max-width:160px">${c.note}</td>
+      <td><button class="btn btn-outline btn-sm" onclick="deleteClient(${i})">삭제</button></td>
+    </tr>
+  `).join('');
+}
+
+function openModal() {
+  document.getElementById('clientModal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('clientModal').classList.remove('open');
+}
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('clientModal')) closeModal();
+}
+
+function addClient() {
+  const name = document.getElementById('cName').value.trim();
+  if (!name) return;
+  const clients = loadClients();
+  clients.unshift({
+    name,
+    project: document.getElementById('cProject').value.trim(),
+    platform: document.getElementById('cPlatform').value,
+    budget: document.getElementById('cBudget').value.trim(),
+    status: document.getElementById('cStatus').value,
+    note: document.getElementById('cNote').value.trim(),
+    created: new Date().toLocaleDateString('ko-KR')
+  });
+  saveClients(clients);
+  renderClients();
+  closeModal();
+  ['cName','cProject','cBudget','cNote'].forEach(id => document.getElementById(id).value = '');
+}
+
+function deleteClient(i) {
+  if (!confirm('삭제할까요?')) return;
+  const clients = loadClients();
+  clients.splice(i, 1);
+  saveClients(clients);
+  renderClients();
+}
+
+// ─── COPY ────────────────────────────────────────────
+function copyOutput(id) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = event.currentTarget;
+    btn.textContent = '복사됨!';
+    setTimeout(() => btn.textContent = '복사', 1500);
+  });
+}
+
+// ─── INIT ────────────────────────────────────────────
+renderRoutine();
+renderClients();
+
+const savedKey = localStorage.getItem('claude_api_key');
+if (savedKey) document.getElementById('apiKeyInput').value = savedKey;
+document.getElementById('apiKeyInput').addEventListener('input', e => {
+  localStorage.setItem('claude_api_key', e.target.value);
+});
+</script>
+</body>
+</html>
