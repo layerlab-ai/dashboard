@@ -362,6 +362,24 @@
   }
   .kw-chip:hover { border-color: var(--blue); color: var(--text); }
 
+  .routine-tab {
+    padding: 6px 16px;
+    border-radius: 8px;
+    border: 0.5px solid var(--border-md);
+    background: transparent;
+    color: var(--text2);
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .routine-tab:hover { background: var(--surface2); color: var(--text); }
+  .routine-tab.active {
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
+  }
+
   /* divider */
   .divider { height: 0.5px; background: var(--border); margin: 16px 0; }
 
@@ -541,18 +559,27 @@
       </div>
     </div>
 
-    <!-- 주간 루틴 -->
+    <!-- 루틴 -->
     <div class="page" id="page-routine">
-      <div class="page-title">주간 루틴 체크리스트</div>
-      <div class="page-sub">클릭해서 완료 처리 — 매주 월요일 자동 리셋 (localStorage 저장)</div>
+      <div class="page-title">루틴 체크리스트</div>
+      <div class="page-sub">데일리 → 주간 → 월간 → 연간 순으로 관리해요</div>
 
-      <div class="grid3">
+      <!-- 루틴 탭 -->
+      <div style="display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:12px;">
+        <button class="routine-tab active" onclick="switchRoutineTab('daily')" id="rtab-daily">데일리</button>
+        <button class="routine-tab" onclick="switchRoutineTab('weekly')" id="rtab-weekly">주간</button>
+        <button class="routine-tab" onclick="switchRoutineTab('monthly')" id="rtab-monthly">월간</button>
+        <button class="routine-tab" onclick="switchRoutineTab('yearly')" id="rtab-yearly">연간</button>
+      </div>
+
+      <!-- 진행률 (데일리/주간만) -->
+      <div id="routine-stats" class="grid3" style="margin-bottom:14px;">
         <div class="stat-card">
           <div class="stat-label">완료율</div>
           <div class="stat-value" id="routineProgress">0%</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">완료 항목</div>
+          <div class="stat-label">완료</div>
           <div class="stat-value" id="routineDone">0</div>
         </div>
         <div class="stat-card">
@@ -561,11 +588,11 @@
         </div>
       </div>
 
-      <div style="margin-top:14px;display:flex;gap:8px;margin-bottom:14px;">
-        <button class="btn btn-outline btn-sm" onclick="resetRoutine()">이번 주 리셋</button>
+      <div style="margin-bottom:12px;">
+        <button class="btn btn-outline btn-sm" onclick="resetCurrentRoutine()" id="routine-reset-btn">리셋</button>
       </div>
 
-      <div class="grid2" id="routineGrid"></div>
+      <div id="routineGrid"></div>
     </div>
 
     <!-- 클라이언트 CRM -->
@@ -1132,74 +1159,209 @@ function clearLinkedin() {
 }
 
 // ─── ROUTINE ─────────────────────────────────────────
-const ROUTINE_DATA = [
+let currentRoutineTab = 'daily';
+
+const DAILY_DATA = [
+  {
+    day: '매일 아침 (15분)',
+    badge: 'badge-blue',
+    items: [
+      { id: 'd1', label: 'LinkedIn 피드 열고 창업자 포스트 2~3개 찾기', meta: '검색: "pitch deck" founder / "just launched" / "we\'re building"' },
+      { id: 'd2', label: '댓글 2~3개 작성', meta: '경험 공유 or 관찰 추가 — "Great post!" 금지' },
+      { id: 'd3', label: '어제 댓글에 반응 있으면 연결 요청 보내기', meta: '반응 없으면 패스, 억지로 보내지 않기' },
+    ]
+  },
+  {
+    day: '매일 저녁 (10분)',
+    badge: 'badge-green',
+    items: [
+      { id: 'd4', label: 'Upwork 알림 확인 + 답변', meta: '24시간 내 응답 유지가 핵심' },
+      { id: 'd5', label: '오늘 작업 중 LinkedIn 소재 될 만한 거 메모', meta: '대시보드 포스트 생성기에 바로 입력해도 OK' },
+    ]
+  },
+  {
+    day: 'grnd (인스타/비핸스)',
+    badge: 'badge-amber',
+    items: [
+      { id: 'd6', label: '올릴 게 있으면 업로드, 없으면 패스', meta: '매일 올릴 필요 없음 — 주 2~3회가 적당' },
+    ]
+  }
+];
+
+const WEEKLY_DATA = [
   {
     day: '월요일',
     badge: 'badge-blue',
     items: [
-      { id: 'mon1', label: 'Upwork 새 공고 확인 (30분)', meta: '키워드: pitch deck, SaaS design, startup branding' },
-      { id: 'mon2', label: '이번 주 LinkedIn 포스트 소재 정하기', meta: '작업 일지, 관찰, 클라이언트 인사이트' },
-      { id: 'mon3', label: '진행 중 클라이언트 상태 업데이트', meta: 'CRM 탭에서 진행 상황 기록' },
+      { id: 'mon1', label: 'Upwork 새 공고 확인 + 제안서 2~3개 발송', meta: '키워드: pitch deck, SaaS design, startup branding' },
+      { id: 'mon2', label: '이번 주 LinkedIn 포스트 소재 정하기', meta: '대시보드 소재 추천 기능 활용' },
+      { id: 'mon3', label: 'CRM 탭 — 진행 중 클라이언트 상태 업데이트', meta: '리드 → 진행 중 → 완료 상태 관리' },
     ]
   },
   {
     day: '화요일',
     badge: 'badge-green',
     items: [
-      { id: 'tue1', label: 'Upwork 제안서 2~3개 발송', meta: '이 대시보드 제안서 생성기 활용' },
-      { id: 'tue2', label: 'LinkedIn 포스트 작성 + 예약', meta: '월요일 소재 → Buffer/Later 예약' },
+      { id: 'tue1', label: 'LinkedIn 포스트 1 발행', meta: '소재 추천 → 생성 → 복붙' },
+      { id: 'tue2', label: 'LinkedIn 연결 요청 10명 목표', meta: '댓글 단 창업자 위주로' },
     ]
   },
   {
     day: '수요일',
     badge: 'badge-blue',
     items: [
-      { id: 'wed1', label: 'LinkedIn 댓글 활동 (20분)', meta: '스타트업 창업자, VC 포스트에 인사이트 댓글' },
-      { id: 'wed2', label: 'Upwork 메시지 답변 확인', meta: '24시간 내 응답 유지' },
+      { id: 'wed1', label: 'LinkedIn 댓글 활동 집중 (20분)', meta: '스타트업 창업자 포스트 5개 타깃' },
+      { id: 'wed2', label: 'Upwork 메시지 답변 + 제안서 추가 발송', meta: '이번 주 목표 미달이면 보충' },
     ]
   },
   {
     day: '목요일',
     badge: 'badge-amber',
     items: [
-      { id: 'thu1', label: '진행 중 프로젝트 중간 체크인 발송', meta: '"Here\'s where we are" 메시지' },
-      { id: 'thu2', label: 'LinkedIn 포스트 2 작성 (Before/After)', meta: '이미지 포함, 저장율 높은 포스트' },
+      { id: 'thu1', label: '진행 중 프로젝트 중간 체크인 발송', meta: '"Here\'s where we are" — 클라이언트 신뢰 관리' },
+      { id: 'thu2', label: 'LinkedIn 포스트 2 발행', meta: 'Before/After or 프로세스 공개 형식' },
     ]
   },
   {
     day: '금요일',
     badge: 'badge-green',
     items: [
-      { id: 'fri1', label: '이번 주 수주/문의 집계', meta: 'CRM 탭 업데이트' },
-      { id: 'fri2', label: 'LinkedIn 짧은 팁 포스트', meta: '댓글 유도, 알고리즘 부스팅' },
-      { id: 'fri3', label: '완료 프로젝트 리뷰 요청 발송', meta: 'Upwork 리뷰 + LinkedIn 추천사' },
+      { id: 'fri1', label: '이번 주 수주/문의 집계', meta: 'CRM 탭 업데이트 — 숫자로 보기' },
+      { id: 'fri2', label: '완료 프로젝트 리뷰 요청 발송', meta: 'Upwork 리뷰 + LinkedIn 추천사' },
+      { id: 'fri3', label: 'LinkedIn 트래커 이번 주 목표 달성률 확인', meta: '댓글 15 / 연결 10 / DM 3' },
     ]
   },
   {
     day: '주말 (선택)',
     badge: 'badge-amber',
     items: [
-      { id: 'sat1', label: 'Behance 케이스 스터디 업데이트', meta: '완료 프로젝트 → 케이스 스터디 1건' },
-      { id: 'sat2', label: '다음 주 콘텐츠 배치 작업', meta: '2주치 소재 준비, Buffer 예약' },
+      { id: 'sat1', label: 'grnd — 인스타/비핸스 업로드', meta: 'LUV, Short Paper, Vine Branch, Dataoven 순으로' },
+      { id: 'sat2', label: '다음 주 LinkedIn 소재 2개 미리 준비', meta: '대시보드에서 생성해두기' },
     ]
   }
 ];
 
+const MONTHLY_DATA = [
+  {
+    day: '매달 1주차',
+    badge: 'badge-blue',
+    items: [
+      { id: 'm1', label: '지난달 수입/문의 집계', meta: '얼마 벌었나, 어디서 왔나 확인' },
+      { id: 'm2', label: 'Upwork 프로필 업데이트', meta: '새 작업물 추가, 스킬 키워드 보완' },
+      { id: 'm3', label: '이달 목표 설정', meta: '수주 목표 금액 or 건수 정하기' },
+    ]
+  },
+  {
+    day: '매달 2주차',
+    badge: 'badge-green',
+    items: [
+      { id: 'm4', label: '포트폴리오 웹사이트 업데이트', meta: '완료 프로젝트 추가 or 이미지 교체' },
+      { id: 'm5', label: 'grnd 비핸스 케이스스터디 1건 업로드', meta: '라우드소싱 작업물 → 케이스스터디 포맷으로' },
+    ]
+  },
+  {
+    day: '매달 3주차',
+    badge: 'badge-amber',
+    items: [
+      { id: 'm6', label: 'LinkedIn 연결 현황 체크', meta: '새 연결 중 창업자/스타트업 비율 확인' },
+      { id: 'm7', label: '위시켓/크몽 프로필 업데이트', meta: '최근 작업물 반영, 서비스 가격 조정' },
+    ]
+  },
+  {
+    day: '매달 4주차',
+    badge: 'badge-blue',
+    items: [
+      { id: 'm8', label: '이달 회고 — 잘 된 것 / 안 된 것', meta: '어떤 채널에서 반응이 왔나, 어떤 포스트가 잘 됐나' },
+      { id: 'm9', label: '다음 달 콘텐츠 방향 잡기', meta: 'LinkedIn 포스트 소재 8개 미리 뽑아두기' },
+      { id: 'm10', label: '단가 검토', meta: '3개월마다 10~20% 인상 목표' },
+    ]
+  }
+];
+
+const YEARLY_DATA = [
+  {
+    day: 'Q1 (1~3월) — 기반 세팅',
+    badge: 'badge-blue',
+    items: [
+      { id: 'y1', label: '포트폴리오 + 대시보드 + LinkedIn 세팅 완료', meta: '✅ 완료' },
+      { id: 'y2', label: 'Upwork 승인 + 첫 제안서 발송', meta: '승인 대기 중' },
+      { id: 'y3', label: 'grnd 인스타/비핸스 계정 세팅 + 첫 업로드', meta: '✅ OKM Spain 완료' },
+      { id: 'y4', label: '첫 유료 클라이언트 1명 확보', meta: '위시켓/크몽/LinkedIn/Upwork 중 하나' },
+    ]
+  },
+  {
+    day: 'Q2 (4~6월) — 첫 케이스 확보',
+    badge: 'badge-green',
+    items: [
+      { id: 'y5', label: '유료 프로젝트 3건 완료', meta: '레퍼런스 + Upwork 리뷰 확보 목표' },
+      { id: 'y6', label: 'LinkedIn 팔로워 500명 달성', meta: '주 2회 포스팅 + 댓글 루틴 유지' },
+      { id: 'y7', label: '월 수입 목표 50만원 이상', meta: '단가 낮아도 OK, 케이스 쌓는 게 우선' },
+      { id: 'y8', label: 'grnd 포스트 20개 달성', meta: '5개 작업물 전부 업로드 완료' },
+    ]
+  },
+  {
+    day: 'Q3 (7~9월) — 포지셔닝 강화',
+    badge: 'badge-amber',
+    items: [
+      { id: 'y9', label: 'Upwork Rising Talent 배지 획득', meta: '리뷰 5개 이상 + JSS 90% 이상' },
+      { id: 'y10', label: '단가 인상 — 프로젝트당 $500+ 목표', meta: '레퍼런스 쌓이면 단가 협상 가능' },
+      { id: 'y11', label: '스타트업 클라이언트 LinkedIn 통해 1명 확보', meta: '댓글 루틴 → DM → 계약' },
+      { id: 'y12', label: '월 수입 목표 150만원 이상', meta: '' },
+    ]
+  },
+  {
+    day: 'Q4 (10~12월) — 스케일업',
+    badge: 'badge-blue',
+    items: [
+      { id: 'y13', label: '올해 회고 — 수입/클라이언트/채널 분석', meta: '어디서 가장 많이 왔는지 파악' },
+      { id: 'y14', label: '내년 서비스 패키지 설계', meta: '피치덱+브랜딩+웹사이트 묶음 패키지 가격 책정' },
+      { id: 'y15', label: '재직 → 프리랜서 전환 타이밍 검토', meta: '월 수입 현재 월급 70% 이상이면 전환 고려' },
+      { id: 'y16', label: 'grnd 브랜딩 강화 or 개인 이름으로 통합 결정', meta: '방향성 정하기' },
+    ]
+  }
+];
+
+function switchRoutineTab(tab) {
+  currentRoutineTab = tab;
+  ['daily','weekly','monthly','yearly'].forEach(t => {
+    document.getElementById(`rtab-${t}`).classList.toggle('active', t === tab);
+  });
+  const statsEl = document.getElementById('routine-stats');
+  const resetBtn = document.getElementById('routine-reset-btn');
+  // 월간/연간은 통계 숨김
+  statsEl.style.display = (tab === 'monthly' || tab === 'yearly') ? 'none' : '';
+  resetBtn.textContent = tab === 'daily' ? '오늘 리셋' : tab === 'weekly' ? '이번 주 리셋' : tab === 'monthly' ? '이번 달 리셋' : '연간 리셋';
+  renderRoutine();
+}
+
+function getRoutineData() {
+  if (currentRoutineTab === 'daily') return DAILY_DATA;
+  if (currentRoutineTab === 'weekly') return WEEKLY_DATA;
+  if (currentRoutineTab === 'monthly') return MONTHLY_DATA;
+  return YEARLY_DATA;
+}
+
+function getRoutineKey() {
+  return `routine_${currentRoutineTab}`;
+}
+
 function renderRoutine() {
-  const saved = JSON.parse(localStorage.getItem('routine_checks') || '{}');
+  const data = getRoutineData();
+  const saved = JSON.parse(localStorage.getItem(getRoutineKey()) || '{}');
   const grid = document.getElementById('routineGrid');
   grid.innerHTML = '';
+  grid.className = (currentRoutineTab === 'daily') ? '' : 'grid2';
 
   let total = 0, done = 0;
 
-  ROUTINE_DATA.forEach(day => {
+  data.forEach(section => {
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-      <span class="badge ${day.badge}" style="margin:0">${day.day}</span>
+      <span class="badge ${section.badge}" style="margin:0">${section.day}</span>
     </div>`;
 
-    day.items.forEach(item => {
+    section.items.forEach(item => {
       total++;
       const checked = saved[item.id];
       if (checked) done++;
@@ -1217,24 +1379,30 @@ function renderRoutine() {
     grid.appendChild(card);
   });
 
-  document.getElementById('routineProgress').textContent = total ? Math.round(done/total*100) + '%' : '0%';
-  document.getElementById('routineDone').textContent = done;
-  document.getElementById('routineLeft').textContent = total - done;
+  const prog = document.getElementById('routineProgress');
+  const doneEl = document.getElementById('routineDone');
+  const leftEl = document.getElementById('routineLeft');
+  if (prog) prog.textContent = total ? Math.round(done/total*100) + '%' : '0%';
+  if (doneEl) doneEl.textContent = done;
+  if (leftEl) leftEl.textContent = total - done;
 }
 
 function toggleCheck(id) {
-  const saved = JSON.parse(localStorage.getItem('routine_checks') || '{}');
+  const key = getRoutineKey();
+  const saved = JSON.parse(localStorage.getItem(key) || '{}');
   saved[id] = !saved[id];
-  localStorage.setItem('routine_checks', JSON.stringify(saved));
+  localStorage.setItem(key, JSON.stringify(saved));
   renderRoutine();
 }
 
-function resetRoutine() {
-  if (confirm('이번 주 체크를 모두 초기화할까요?')) {
-    localStorage.removeItem('routine_checks');
+function resetCurrentRoutine() {
+  if (confirm('현재 탭 체크를 모두 초기화할까요?')) {
+    localStorage.removeItem(getRoutineKey());
     renderRoutine();
   }
 }
+
+function resetRoutine() { resetCurrentRoutine(); }
 
 // ─── CLIENTS ─────────────────────────────────────────
 function loadClients() {
