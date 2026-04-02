@@ -436,6 +436,12 @@
       </svg>
       LinkedIn 트래커
     </button>
+    <button class="nav-item" onclick="goto('grnd')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="2" y="2" width="5.5" height="5.5" rx="1"/><rect x="8.5" y="2" width="5.5" height="5.5" rx="1"/><rect x="2" y="8.5" width="5.5" height="5.5" rx="1"/><rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1"/>
+      </svg>
+      grnd 트래커
+    </button>
 
     <div style="flex:1"></div>
     <div style="padding: 0 20px;">
@@ -795,6 +801,183 @@
   </main>
 </div>
 
+<!-- grnd 트래커 페이지 -->
+<div class="page" id="page-grnd" style="display:none;padding:32px;overflow-y:auto;flex:1;">
+  <div class="page-title">grnd 트래커</div>
+  <div class="page-sub">인스타그램 + 비핸스 활동 기록 — 좋아요/댓글/팔로우로 알고리즘을 키워요</div>
+
+  <!-- 주간 목표 -->
+  <div class="grid3" style="margin-bottom:16px;">
+    <div class="stat-card">
+      <div class="stat-label">좋아요 (주간 목표 30)</div>
+      <div class="stat-value" id="grnd-like-count">0</div>
+      <div style="height:3px;background:var(--border-md);border-radius:2px;margin-top:8px;overflow:hidden;">
+        <div id="grnd-like-bar" style="height:100%;background:var(--blue);border-radius:2px;width:0%;transition:width .3s;"></div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">댓글 (주간 목표 15)</div>
+      <div class="stat-value" id="grnd-comment-count">0</div>
+      <div style="height:3px;background:var(--border-md);border-radius:2px;margin-top:8px;overflow:hidden;">
+        <div id="grnd-comment-bar" style="height:100%;background:var(--green);border-radius:2px;width:0%;transition:width .3s;"></div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">팔로우 (주간 목표 10)</div>
+      <div class="stat-value" id="grnd-follow-count">0</div>
+      <div style="height:3px;background:var(--border-md);border-radius:2px;margin-top:8px;overflow:hidden;">
+        <div id="grnd-follow-bar" style="height:100%;background:var(--amber);border-radius:2px;width:0%;transition:width .3s;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid2">
+
+    <!-- 좌: 액션 기록 -->
+    <div style="display:flex;flex-direction:column;gap:12px;">
+
+      <!-- 액션 기록 카드 -->
+      <div class="card">
+        <div class="card-title">액션 기록</div>
+
+        <label>플랫폼</label>
+        <select id="grnd-platform">
+          <option value="instagram">Instagram</option>
+          <option value="behance">Behance</option>
+        </select>
+
+        <label>액션 유형</label>
+        <select id="grnd-action-type">
+          <option value="like">❤️ 좋아요</option>
+          <option value="comment">💬 댓글</option>
+          <option value="follow">👤 팔로우</option>
+          <option value="save">🔖 저장</option>
+        </select>
+
+        <label>계정 / 작업물</label>
+        <input type="text" id="grnd-target" placeholder="예: @minimalstudio / Behance 프로젝트명">
+
+        <label>카테고리</label>
+        <select id="grnd-category">
+          <option value="branding">브랜딩 디자이너</option>
+          <option value="luxury">럭셔리/라이프스타일 브랜드</option>
+          <option value="startup">스타트업 계정</option>
+          <option value="potential">잠재 클라이언트</option>
+          <option value="other">기타</option>
+        </select>
+
+        <label>메모 (선택)</label>
+        <input type="text" id="grnd-memo" placeholder="예: 피드 결 비슷함, 팔로우 먼저">
+
+        <div style="margin-top:14px;display:flex;gap:8px;">
+          <button class="btn btn-primary" onclick="addGrndAction()">기록 추가</button>
+          <button class="btn btn-outline btn-sm" onclick="resetGrndWeek()">주간 리셋</button>
+        </div>
+      </div>
+
+      <!-- 타깃 계정 리스트 -->
+      <div class="card">
+        <div class="card-title">타깃 계정 리스트</div>
+        <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
+          <button class="routine-tab active" onclick="filterGrndAccounts('all')" id="gacc-all">전체</button>
+          <button class="routine-tab" onclick="filterGrndAccounts('branding')" id="gacc-branding">브랜딩</button>
+          <button class="routine-tab" onclick="filterGrndAccounts('luxury')" id="gacc-luxury">럭셔리</button>
+          <button class="routine-tab" onclick="filterGrndAccounts('potential')" id="gacc-potential">잠재 클라이언트</button>
+        </div>
+
+        <div style="display:flex;gap:6px;margin-bottom:10px;">
+          <input type="text" id="gacc-name" placeholder="계정명 (@handle)" style="flex:1;">
+          <input type="text" id="gacc-note" placeholder="메모" style="flex:1;">
+          <select id="gacc-cat" style="width:120px;">
+            <option value="branding">브랜딩</option>
+            <option value="luxury">럭셔리</option>
+            <option value="startup">스타트업</option>
+            <option value="potential">잠재 클라이언트</option>
+          </select>
+          <button class="btn btn-outline btn-sm" onclick="addGrndAccount()">추가</button>
+        </div>
+
+        <div id="grnd-account-list" style="display:flex;flex-direction:column;gap:6px;max-height:260px;overflow-y:auto;">
+          <div style="font-size:12px;color:var(--text3);text-align:center;padding:20px;">
+            팔로우할 계정을 추가해두세요
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 우: 기록 목록 + 해시태그 -->
+    <div style="display:flex;flex-direction:column;gap:12px;">
+
+      <!-- 이번 주 기록 -->
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;">
+          <div class="card-title" style="margin:0;">이번 주 기록</div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-outline btn-sm" onclick="filterGrnd('all')" id="gf-all" style="border-color:var(--blue);color:var(--blue-text);">전체</button>
+            <button class="btn btn-outline btn-sm" onclick="filterGrnd('instagram')" id="gf-instagram">인스타</button>
+            <button class="btn btn-outline btn-sm" onclick="filterGrnd('behance')" id="gf-behance">비핸스</button>
+          </div>
+        </div>
+        <div id="grnd-action-list" style="max-height:300px;overflow-y:auto;">
+          <div style="text-align:center;padding:32px;font-size:13px;color:var(--text3);">
+            첫 액션을 기록해보세요
+          </div>
+        </div>
+      </div>
+
+      <!-- 해시태그 세트 -->
+      <div class="card">
+        <div class="card-title">해시태그 세트</div>
+        <div style="display:flex;flex-direction:column;gap:8px;" id="hashtag-sets">
+
+          <div class="action-btn" style="cursor:default;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+              <div style="font-size:11px;font-weight:500;color:var(--text);">브랜드 아이덴티티</div>
+              <button onclick="copyHashtag(0)" style="font-size:11px;padding:2px 8px;border-radius:6px;border:0.5px solid var(--border-md);background:transparent;color:var(--text2);cursor:pointer;">복사</button>
+            </div>
+            <div style="font-size:11px;color:var(--text3);line-height:1.6;">#brandidentity #logodesign #visualidentity #branding #branddesign #graphicdesign #brandingstudio #logodesigner</div>
+          </div>
+
+          <div class="action-btn" style="cursor:default;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+              <div style="font-size:11px;font-weight:500;color:var(--text);">럭셔리 브랜딩</div>
+              <button onclick="copyHashtag(1)" style="font-size:11px;padding:2px 8px;border-radius:6px;border:0.5px solid var(--border-md);background:transparent;color:var(--text2);cursor:pointer;">복사</button>
+            </div>
+            <div style="font-size:11px;color:var(--text3);line-height:1.6;">#luxurybranding #luxurydesign #jewelrybranding #minimaldesign #editorialdesign #quietluxury #brandidentity</div>
+          </div>
+
+          <div class="action-btn" style="cursor:default;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+              <div style="font-size:11px;font-weight:500;color:var(--text);">테크 브랜딩</div>
+              <button onclick="copyHashtag(2)" style="font-size:11px;padding:2px 8px;border-radius:6px;border:0.5px solid var(--border-md);background:transparent;color:var(--text2);cursor:pointer;">복사</button>
+            </div>
+            <div style="font-size:11px;color:var(--text3);line-height:1.6;">#techbranding #startupbranding #saasdesign #productdesign #brandidentity #logodesign #uxdesign</div>
+          </div>
+
+          <div class="action-btn" style="cursor:default;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+              <div style="font-size:11px;font-weight:500;color:var(--text);">F&B / 라이프스타일</div>
+              <button onclick="copyHashtag(3)" style="font-size:11px;padding:2px 8px;border-radius:6px;border:0.5px solid var(--border-md);background:transparent;color:var(--text2);cursor:pointer;">복사</button>
+            </div>
+            <div style="font-size:11px;color:var(--text3);line-height:1.6;">#restaurantbranding #foodbranding #lifestylebranding #brandidentity #packaging #editorialdesign #logodesign</div>
+          </div>
+
+          <div class="action-btn" style="cursor:default;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+              <div style="font-size:11px;font-weight:500;color:var(--text);">grnd 공통</div>
+              <button onclick="copyHashtag(4)" style="font-size:11px;padding:2px 8px;border-radius:6px;border:0.5px solid var(--border-md);background:transparent;color:var(--text2);cursor:pointer;">복사</button>
+            </div>
+            <div style="font-size:11px;color:var(--text3);line-height:1.6;">#grnd #conceptwork #branddesign #visualidentity #logodesign #designstudio #brandinginspiration</div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 <!-- Add Client Modal -->
 <div class="modal-overlay" id="clientModal" onclick="closeModalOutside(event)">
   <div class="modal">
@@ -860,10 +1043,12 @@ let lastLinkedinOutput = '';
 
 // ─── NAVIGATION ──────────────────────────────────────
 function goto(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => { p.classList.remove('active'); p.style.display = 'none'; });
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
+  const target = document.getElementById('page-' + page);
+  if (target) { target.style.display = 'flex'; target.classList.add('active'); }
   event.currentTarget.classList.add('active');
+  if (page === 'grnd') renderGrndTracker();
 }
 
 // ─── API CALL ────────────────────────────────────────
@@ -1711,6 +1896,188 @@ function copyKw(el) {
     el.textContent = '복사됨!';
     el.style.borderColor = 'var(--blue)';
     setTimeout(() => { el.textContent = orig; el.style.borderColor = ''; }, 1200);
+  });
+}
+
+// ─── GRND TRACKER ────────────────────────────────────
+const GRND_GOALS = { like: 30, comment: 15, follow: 10, save: 0 };
+const HASHTAG_SETS = [
+  '#brandidentity #logodesign #visualidentity #branding #branddesign #graphicdesign #brandingstudio #logodesigner',
+  '#luxurybranding #luxurydesign #jewelrybranding #minimaldesign #editorialdesign #quietluxury #brandidentity',
+  '#techbranding #startupbranding #saasdesign #productdesign #brandidentity #logodesign #uxdesign',
+  '#restaurantbranding #foodbranding #lifestylebranding #brandidentity #packaging #editorialdesign #logodesign',
+  '#grnd #conceptwork #branddesign #visualidentity #logodesign #designstudio #brandinginspiration'
+];
+
+let grndFilter = 'all';
+let grndAccountFilter = 'all';
+
+function loadGrndActions() { return JSON.parse(localStorage.getItem('grnd_actions') || '[]'); }
+function saveGrndActions(a) { localStorage.setItem('grnd_actions', JSON.stringify(a)); }
+function loadGrndAccounts() { return JSON.parse(localStorage.getItem('grnd_accounts') || '[]'); }
+function saveGrndAccounts(a) { localStorage.setItem('grnd_accounts', JSON.stringify(a)); }
+
+function getGrndWeekKey() {
+  const now = new Date();
+  const jan1 = new Date(now.getFullYear(), 0, 1);
+  const week = Math.ceil(((now - jan1) / 86400000 + jan1.getDay() + 1) / 7);
+  return `${now.getFullYear()}-W${week}`;
+}
+
+function addGrndAction() {
+  const target = document.getElementById('grnd-target').value.trim();
+  if (!target) { alert('계정/작업물명을 입력해주세요'); return; }
+  const actions = loadGrndActions();
+  actions.unshift({
+    id: Date.now(),
+    platform: document.getElementById('grnd-platform').value,
+    type: document.getElementById('grnd-action-type').value,
+    target,
+    category: document.getElementById('grnd-category').value,
+    memo: document.getElementById('grnd-memo').value.trim(),
+    date: new Date().toLocaleDateString('ko-KR'),
+    week: getGrndWeekKey()
+  });
+  saveGrndActions(actions);
+  renderGrndTracker();
+  document.getElementById('grnd-target').value = '';
+  document.getElementById('grnd-memo').value = '';
+}
+
+function addGrndAccount() {
+  const name = document.getElementById('gacc-name').value.trim();
+  if (!name) return;
+  const accounts = loadGrndAccounts();
+  accounts.unshift({
+    id: Date.now(),
+    name,
+    note: document.getElementById('gacc-note').value.trim(),
+    category: document.getElementById('gacc-cat').value
+  });
+  saveGrndAccounts(accounts);
+  renderGrndAccounts();
+  document.getElementById('gacc-name').value = '';
+  document.getElementById('gacc-note').value = '';
+}
+
+function renderGrndTracker() {
+  const actions = loadGrndActions();
+  const thisWeek = getGrndWeekKey();
+  const weekActions = actions.filter(a => a.week === thisWeek);
+
+  // 카운트
+  const counts = { like: 0, comment: 0, follow: 0, save: 0 };
+  weekActions.forEach(a => { if (counts[a.type] !== undefined) counts[a.type]++; });
+
+  ['like','comment','follow'].forEach(t => {
+    const el = document.getElementById(`grnd-${t}-count`);
+    const bar = document.getElementById(`grnd-${t}-bar`);
+    if (el) el.textContent = counts[t];
+    if (bar) bar.style.width = Math.min(100, Math.round(counts[t] / GRND_GOALS[t] * 100)) + '%';
+  });
+
+  // 목록
+  const list = document.getElementById('grnd-action-list');
+  const filtered = actions.filter(a => grndFilter === 'all' || a.platform === grndFilter);
+
+  if (!filtered.length) {
+    list.innerHTML = '<div style="text-align:center;padding:32px;font-size:13px;color:var(--text3);">첫 액션을 기록해보세요</div>';
+  } else {
+    const typeLabel = { like:'❤️ 좋아요', comment:'💬 댓글', follow:'👤 팔로우', save:'🔖 저장' };
+    const platLabel = { instagram:'Instagram', behance:'Behance' };
+    list.innerHTML = filtered.map((a, i) => `
+      <div style="padding:12px 20px;border-bottom:0.5px solid var(--border);display:flex;flex-direction:column;gap:4px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:12px;font-weight:500;color:var(--text);">${a.target}</span>
+            <span style="font-size:11px;padding:2px 7px;border-radius:6px;background:var(--surface2);color:var(--text2);">${typeLabel[a.type]}</span>
+            <span style="font-size:11px;padding:2px 7px;border-radius:6px;background:var(--surface2);color:var(--text3);">${platLabel[a.platform]}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:11px;color:var(--text3);">${a.date}</span>
+            <button onclick="deleteGrndAction(${i})" style="font-size:11px;padding:2px 8px;border-radius:6px;border:0.5px solid var(--border-md);background:transparent;color:var(--text3);cursor:pointer;">삭제</button>
+          </div>
+        </div>
+        ${a.memo ? `<div style="font-size:11px;color:var(--text3);">${a.memo}</div>` : ''}
+      </div>`).join('');
+  }
+
+  renderGrndAccounts();
+}
+
+function renderGrndAccounts() {
+  const accounts = loadGrndAccounts();
+  const list = document.getElementById('grnd-account-list');
+  const filtered = accounts.filter(a => grndAccountFilter === 'all' || a.category === grndAccountFilter);
+  const catLabel = { branding:'브랜딩', luxury:'럭셔리', startup:'스타트업', potential:'잠재 클라이언트' };
+  const catColor = { branding:'var(--blue-bg)', luxury:'var(--amber-bg)', startup:'var(--green-bg)', potential:'var(--red-bg)' };
+  const catText = { branding:'var(--blue-text)', luxury:'var(--amber-text)', startup:'var(--green-text)', potential:'var(--red-text)' };
+
+  if (!filtered.length) {
+    list.innerHTML = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:20px;">팔로우할 계정을 추가해두세요</div>';
+    return;
+  }
+  list.innerHTML = filtered.map((a, i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:var(--surface2);">
+      <span style="font-size:12px;font-weight:500;color:var(--text);flex:1;">${a.name}</span>
+      ${a.note ? `<span style="font-size:11px;color:var(--text3);">${a.note}</span>` : ''}
+      <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:${catColor[a.category]};color:${catText[a.category]};">${catLabel[a.category]}</span>
+      <button onclick="deleteGrndAccount(${i})" style="font-size:11px;padding:2px 6px;border-radius:4px;border:0.5px solid var(--border-md);background:transparent;color:var(--text3);cursor:pointer;">×</button>
+    </div>`).join('');
+}
+
+function deleteGrndAction(idx) {
+  const actions = loadGrndActions();
+  const filtered = actions.filter(a => grndFilter === 'all' || a.platform === grndFilter);
+  const target = filtered[idx];
+  const realIdx = actions.findIndex(a => a.id === target.id);
+  if (!confirm('삭제할까요?')) return;
+  actions.splice(realIdx, 1);
+  saveGrndActions(actions);
+  renderGrndTracker();
+}
+
+function deleteGrndAccount(idx) {
+  const accounts = loadGrndAccounts();
+  const filtered = accounts.filter(a => grndAccountFilter === 'all' || a.category === grndAccountFilter);
+  const target = filtered[idx];
+  const realIdx = accounts.findIndex(a => a.id === target.id);
+  accounts.splice(realIdx, 1);
+  saveGrndAccounts(accounts);
+  renderGrndAccounts();
+}
+
+function filterGrnd(f) {
+  grndFilter = f;
+  ['all','instagram','behance'].forEach(t => {
+    const btn = document.getElementById(`gf-${t}`);
+    if (btn) { btn.style.borderColor = t === f ? 'var(--blue)' : ''; btn.style.color = t === f ? 'var(--blue-text)' : ''; }
+  });
+  renderGrndTracker();
+}
+
+function filterGrndAccounts(f) {
+  grndAccountFilter = f;
+  ['all','branding','luxury','potential'].forEach(t => {
+    const btn = document.getElementById(`gacc-${t}`);
+    if (btn) btn.classList.toggle('active', t === f);
+  });
+  renderGrndAccounts();
+}
+
+function resetGrndWeek() {
+  if (!confirm('이번 주 기록을 초기화할까요?')) return;
+  const actions = loadGrndActions();
+  const thisWeek = getGrndWeekKey();
+  saveGrndActions(actions.filter(a => a.week !== thisWeek));
+  renderGrndTracker();
+}
+
+function copyHashtag(i) {
+  navigator.clipboard.writeText(HASHTAG_SETS[i]).then(() => {
+    const btns = document.querySelectorAll('#hashtag-sets button');
+    btns[i].textContent = '복사됨!';
+    setTimeout(() => btns[i].textContent = '복사', 1200);
   });
 }
 
